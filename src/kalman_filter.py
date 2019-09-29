@@ -43,7 +43,7 @@ def update(prior, z, R, H):
     :return: Returns the posterior mean and covariance as State namedtuple
     """
 
-    assert prior.shape[1] == 1
+    assert prior.X.shape[1] == 1
     assert prior.X.shape[0] == H.shape[1]
     assert H.shape[0] == z.shape[0]
     assert z.shape[1] == 1
