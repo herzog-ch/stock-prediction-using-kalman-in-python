@@ -23,8 +23,9 @@ def main():
     H = np.array([[1, 0]])
 
     # data for plotting
-    gt = []
-    result = []
+    gt = {'price': [], 'trend': []}
+    result = {'price': [], 'trend': []}
+    velocity = []
 
     counter = 0
 
@@ -39,17 +40,44 @@ def main():
         posterior = kalman_filter.update(prior, z, R, H)
         state = posterior
 
-        gt.append(z[0][0])
-        result.append(prior.X[0][0])
+        gt['price'].append(z[0][0])
+        result['price'].append(prior.X[0][0])
+        velocity.append(prior.X[1][0])
+
+        if counter == 0:
+            gt['trend'].append(1)
+            result['trend'].append(1)
+        else:
+            predicted_trend = 1 if prior.X[0][0] > result['price'][counter - 1] else -1
+            result['trend'].append(predicted_trend)
+            gt_trend = 1 if z[0][0] > gt['price'][counter - 1] else -1
+            gt['trend'].append(gt_trend)
 
         counter += 1
-        if counter > 20:
-            break
+        # if counter > 20:
+        #    break
 
-    plt.plot(gt)
-    plt.plot(result)
+    # KPI
+    # number of correct trend predictions
+    correct_predictions = 0
+    for x, y in zip(result['trend'], gt['trend']):
+        if x == y:
+            correct_predictions += 1
+    print(correct_predictions)
+    print(len(gt['trend']))
+    print(float(correct_predictions) / len(gt['trend']))
 
-    plt.legend(['Actual stock price', 'predicted stock price'])
+    plt.figure(1)
+
+    plt.plot(gt['price'])
+    plt.plot(result['price'])
+    plt.plot(velocity)
+
+    x_axis = list(range(len(gt['trend'])))
+    plt.scatter(x_axis, gt['trend'], marker='o', color='g')
+    plt.scatter(x_axis, result['trend'], marker='x', color='r')
+
+    plt.legend(['actual stock price', 'predicted stock price', 'actual trend', 'predicted trend', 'momentum'])
 
     plt.grid()
     plt.show()
